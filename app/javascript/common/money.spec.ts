@@ -4,80 +4,19 @@ import { Money, MoneyAsJson, Operand, RoundingMode } from './money';
 
 describe("Money", () => {
 	describe('Money.fromCents', () => {
-		it('succeeds from a old Money object', () => {
-			expect.assertions(2);
-			const old = Money.fromCents(333, 'eur');
-
-			const result = Money.fromCents(old);
-			expect(result).toStrictEqual(old);
-
-			expect(result).not.toBe(old);
-		});
-		it('succeeds from a json', () => {
-			expect.hasAssertions();
-			const old:MoneyAsJson = { cents: 333, currency: 'eur' };
-
-			const result = Money.fromCents(old);
-			// eslint-disable-next-line jest/prefer-strict-equal
-			expect(result).toEqual(old);
-
-			expect(result).toBeInstanceOf(Money);
-		});
-
-		it('succeeds from a stringy json', () => {
-			expect.hasAssertions();
-			const old = Money.fromCents(333, 'eur');
-
-			const result = Money.fromCents({ cents: '333', currency: 'eur' });
-			// eslint-disable-next-line jest/prefer-strict-equal
-			expect(result).toEqual(old);
-
-			expect(result).toBeInstanceOf(Money);
-		});
-
-		it('succeeds from function parameters', () => {
-			expect.hasAssertions();
-			const result = Money.fromCents(333, 'eur');
-			// eslint-disable-next-line jest/prefer-strict-equal
-			expect(result).toEqual({ cents: 333, currency: 'eur' });
-
-			expect(result).toBeInstanceOf(Money);
-		});
-
 		it('succeeds from BigNumber', () => {
 			expect.hasAssertions();
 			const result = Money.fromCents(new BigNumber(333), 'eur');
 			// eslint-disable-next-line jest/prefer-strict-equal
 			expect(result).toEqual({ cents: 333, currency: 'eur' });
 		});
-
-		it('rejects if string is not an integer', () => {
-			expect.hasAssertions();
-			expect(() => {
-				Money.fromCents('3344.4', 'usd');
-			}).toThrow(TypeError);
-		});
-
-		it('rejects if BigNumber is not an integer', () => {
-			expect.hasAssertions();
-			expect(() => {
-				Money.fromCents(new BigNumber('3344.4'), 'usd');
-			}).toThrow(TypeError);
-		});
-
-		it('rejects if number is not an integer', () => {
-			expect.hasAssertions();
-			expect(() => {
-				Money.fromCents(444.333, 'usd');
-			}).toThrow(TypeError);
-		});
 	});
-	const cents1000 = Money.fromCents(1000, 'usd');
-	const cents500 = Money.fromCents(500, 'usd');
+	const cents1000 = Money.fromCents(new BigNumber(1000), 'usd');
+	const cents500 = Money.fromCents(new BigNumber(500), 'usd');
 
-	const euCents1000 = Money.fromCents(1000, 'eur');
+	const euCents1000 = Money.fromCents(new BigNumber(1000), 'eur');
 
-	const negative1000  = Money.fromCents(-1000, 'usd');
+	const negative1000  = Money.fromCents(new BigNumber(-1000), 'usd');
 
 	function verifyCurrency(func:(m:Money, other:Money) => unknown){
 		expect.assertions(1);
@@ -169,8 +108,8 @@ describe("Money", () => {
 
 	describe('.divide', () => {
 		it('divides 36 into 9', () => {
-			expect.assertions(1);
-			expect(Money.fromCents(36, 'usd').divide(9).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
+			expect.assertions(1);  
+			expect(Money.fromCents(new BigNumber(36), 'usd').divide(Money.fromCents(new BigNumber(9), 'usd')).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
 		});
 
 		it('throws if the currencies do not match', () => {
@@ -180,27 +119,27 @@ describe("Money", () => {
 
 		it('defaults to rounding to HalfUp', () => {
 			expect.assertions(3);
-			expect(Money.fromCents(40, 'usd').divide(Money.fromCents(9, 'usd')).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(40), 'usd').divide(Money.fromCents(new BigNumber(9), 'usd')).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
 
-			expect(Money.fromCents(41, 'usd').divide(Money.fromCents(9, 'usd')).toJSON()).toStrictEqual({cents: 5, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(41), 'usd').divide(Money.fromCents(new BigNumber(9), 'usd')).toJSON()).toStrictEqual({cents: 5, currency: 'usd'});
 
-			expect(Money.fromCents(7, 'usd').divide(Money.fromCents(2, 'usd')).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(7), 'usd').divide(Money.fromCents(new BigNumber(2), 'usd')).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
 		});
 		it('rounds to floor if requested', () => {
 			expect.assertions(1);
-			expect(Money.fromCents(41, 'usd').divide(Money.fromCents(9, 'usd'), RoundingMode.Floor).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(41), 'usd').divide(Money.fromCents(new BigNumber(9), 'usd'), RoundingMode.Floor).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
 		});
 
 		it('rounds to ceil if requested', () => {
 			expect.assertions(1);
-			expect(Money.fromCents(40, 'usd').divide(Money.fromCents(9, 'usd'), RoundingMode.Ceil).toJSON()).toStrictEqual({cents: 5, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(40), 'usd').divide(Money.fromCents(new BigNumber(9), 'usd'), RoundingMode.Ceil).toJSON()).toStrictEqual({cents: 5, currency: 'usd'});
 		});
 	});
 
 	describe('.multiply', () => {
 		it('multiply 9 x 4', () => {
 			expect.assertions(1);
-			expect(Money.fromCents(9, 'usd').multiply(4).toJSON()).toStrictEqual({cents: 36, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(9), 'usd').multiply(Money.fromCents(new BigNumber(4), 'usd')).toJSON()).toStrictEqual({cents: 36, currency: 'usd'});
 		});
 
 		it('throws if the currencies do not match', () => {
@@ -210,22 +149,22 @@ describe("Money", () => {
 
 		it('handles multiplying by a decimal properly', () => {
 			expect.assertions(1);
-			expect(Money.fromCents('3', 'usd').multiply(new BigNumber('1.263')).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(3), 'usd').multiply(Money.fromCents(new BigNumber(1.263), 'usd')).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
 		});
 
 		it('defaults to rounding to HalfUp', () => {
 			expect.assertions(1);
-			expect(Money.fromCents(7, 'usd').multiply(new BigNumber('.5')).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(7), 'usd').multiply(Money.fromCents(new BigNumber(.5), 'usd')).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
 		});
 
 		it('rounds to floor if requested', () => {
 			expect.assertions(1);
-			expect(Money.fromCents('3', 'usd').multiply('1.263', RoundingMode.Floor).toJSON()).toStrictEqual({cents: 3, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(3), 'usd').multiply(Money.fromCents(new BigNumber(1.263), 'usd'), RoundingMode.Floor).toJSON()).toStrictEqual({cents: 3, currency: 'usd'});
 		});
 
 		it('rounds to ceil if requested', () => {
 			expect.assertions(1);
-			expect(Money.fromCents('3', 'usd').multiply('1.263', RoundingMode.Ceil).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
+			expect(Money.fromCents(new BigNumber(3), 'usd').multiply(Money.fromCents(new BigNumber(1.263), 'usd'), RoundingMode.Ceil).toJSON()).toStrictEqual({cents: 4, currency: 'usd'});
 		});
 	});
 
